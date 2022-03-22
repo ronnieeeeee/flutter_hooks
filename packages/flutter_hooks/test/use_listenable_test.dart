@@ -8,6 +8,7 @@ void main() {
   testWidgets('debugFillProperties', (tester) async {
     await tester.pumpWidget(
       HookBuilder(builder: (context) {
+        // AlwaysStoppedAnimation 常に特定の値で停止するアニメーション
         useListenable(const AlwaysStoppedAnimation(42));
         return const SizedBox();
       }),
@@ -45,17 +46,26 @@ void main() {
 
     // ignore: invalid_use_of_protected_member
     expect(listenable.hasListeners, true);
+    // rebuildを要請するdirtyフラグはfalse
     expect(element.dirty, false);
+    // ValueNotifierのvalueが変更す
     listenable.value++;
+    //ValueNotifierのvalueの状態が変更すると
+    //elementのdirtyがtrueになる
     expect(element.dirty, true);
     await tester.pump();
+    // pumpによってbuildをすればもちろん元に戻る
     expect(element.dirty, false);
 
+    //現在の状態をpreviousListenableとしてfinalで定義
     final previousListenable = listenable;
+    // 新たなlistenableをassign
     listenable = ValueNotifier(0);
 
     await pump();
 
+    // おそらくだがhooksのテスト
+    // 新たなlistenableが作られたので前回のhooksはcurrentHooksではなくなりアクティブではなくなったことをテストしている？
     // ignore: invalid_use_of_protected_member
     expect(previousListenable.hasListeners, false);
     // ignore: invalid_use_of_protected_member
@@ -66,6 +76,7 @@ void main() {
     await tester.pump();
     expect(element.dirty, false);
 
+    // SizedBoxのみpumpWidgetすることでhookBuilderがdisposeされた？
     await tester.pumpWidget(const SizedBox());
 
     // ignore: invalid_use_of_protected_member
@@ -102,6 +113,7 @@ void main() {
     listenable = null;
     await pump();
 
+    // 参照渡しをしているのでhooksで管理しようと参照元にnullを入れれば使えなくなるということだろうか？
     // ignore: invalid_use_of_protected_member
     expect(notifier.hasListeners, false);
 
