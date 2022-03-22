@@ -51,7 +51,7 @@ void main() {
   });
 
   testWidgets('no initial data', (tester) async {
-    // initialデータを最初はnullに設定し後から追加しても問題ないかをテストしている
+    //initialデータを最初はnullに設定し後から追加しても問題ないかをテストしている
     // もちろん問題はない
 
     late ValueNotifier<int?> state;
