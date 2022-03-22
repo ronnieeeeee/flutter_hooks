@@ -116,6 +116,7 @@ void main() {
     verifyNoMoreInteractions(effect);
 
     // useEffectの第二引数であるparameters
+    // このparameterは実際の開発ではよくcontroller.isXXXnなどが入ることご多い
     parameters = ['foo'];
     await tester.pumpWidget(builder());
 
@@ -148,6 +149,7 @@ void main() {
     await tester.pumpWidget(builder());
 
     verifyInOrder([
+      //　useEffectの第二引数であるparameterが変更されたのでeffectが走った
       effect(),
       unrelated(),
     ]);
@@ -171,12 +173,15 @@ void main() {
     await tester.pumpWidget(builder());
 
     verifyInOrder([
+      //　useEffectの第二引数であるparameterが変更されたのでeffectが走った
       effect(),
       unrelated(),
     ]);
     verifyNoMoreInteractions(effect);
   });
   testWidgets('useEffect changing parameters call callback', (tester) async {
+// paramerterの値が変わった。ここのparameterは実際の開発ではよくcontroller.isXXXnなどが入ることご多い
+
 // このテストで明らかになったことは要素数ではなく、要素の内容が変更されればdisposeは起こることはない
 // つまりlistの状態に変更が起きればdisposeは起こることはない
 
@@ -193,6 +198,8 @@ void main() {
     await tester.pumpWidget(builder());
 
     verifyInOrder([
+      //　useEffectの第二引数であるparameterが変更されたのでeffectが走った
+
       effect(),
       unrelated(),
     ]);
@@ -221,6 +228,7 @@ void main() {
   testWidgets(
       'useEffect with same array but different parameters don t call callback',
       (tester) async {
+    // 同じ配列で異なるパラメータを持つuseEffectはコールバックを呼び出さない
     parameters = ['foo'];
     await tester.pumpWidget(builder());
 
@@ -229,6 +237,26 @@ void main() {
       unrelated(),
     ]);
     verifyNoMoreInteractions(effect);
+
+// 上のテスト'useEffect adding parameters call callback'と同じような状況だが一つ違うのは
+// 配列内の要素が再生成されているかどうか
+// 上の例では
+// parameters = ['foo'];
+// parameters = ['foo', 42];
+// 'foo'は同じだが参照を使いまわしているわけではない
+// しかし今回の例は
+// parameters = ['foo'];
+// parameters!.add('bar');
+// => ['foo','bar'];
+// 配列の内容は同じだがfooの参照を使いまわしている
+//
+// 下記の配列は別物である
+// parameters = ['foo'];
+// parameters = ['foo', 42]; // effect!
+//
+// parameters = ['foo'];
+// parameters!.add(42); // Don't exec effect.
+//
 
     parameters!.add('bar');
     await tester.pumpWidget(builder());
