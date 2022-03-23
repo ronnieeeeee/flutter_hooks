@@ -191,6 +191,7 @@ void useEffect(Dispose? Function() effect, [List<Object?>? keys]) {
   use(_EffectHook(effect, keys));
 }
 
+// hookは前と同じ状態なら何もしない
 class _EffectHook extends Hook<void> {
   const _EffectHook(this.effect, [List<Object?>? keys]) : super(keys: keys);
 
@@ -209,14 +210,22 @@ class _EffectHookState extends HookState<void, _EffectHook> {
     scheduleEffect();
   }
 
+// didUpdateHookとはdidUpdateWidgetにあたる
+// parent widgetがrebuildされたときに呼び出される
   @override
   void didUpdateHook(_EffectHook oldHook) {
     super.didUpdateHook(oldHook);
 
+    // 第二引数がセットされていない場合
+    //
     if (hook.keys == null) {
+      // セットされたdisposertを呼びだし
       disposer?.call();
+      // effectをまたdisposerにセットする
       scheduleEffect();
     }
+    // 逆に第二引数がセットされている場合は
+    // parent widgetがrebuildしてもeffectを実行しない
   }
 
   @override
@@ -225,6 +234,9 @@ class _EffectHookState extends HookState<void, _EffectHook> {
   @override
   void dispose() => disposer?.call();
 
+// effectをdisposerにセットする
+// そして忘れがちなのがここではeffectを実行している
+// 実行してreturnされたものがcleanUpと呼ばれているものだ。
   void scheduleEffect() {
     disposer = hook.effect();
   }
