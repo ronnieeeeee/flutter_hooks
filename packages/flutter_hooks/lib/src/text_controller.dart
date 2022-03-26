@@ -84,7 +84,10 @@ class _TextEditingControllerHookState
       : TextEditingController(text: hook.initialText);
 
   @override
-  TextEditingController build(BuildContext context) => _controller;
+  TextEditingController build(BuildContext context) {
+    print('ctrl build');
+    return _controller;
+  }
 
   @override
   void dispose() => _controller.dispose();
